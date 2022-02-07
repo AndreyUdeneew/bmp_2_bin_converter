@@ -41,7 +41,7 @@ def selectFullScreens():
         with open(fileName, mode='rb') as f:
             header = [header_byte for header_byte in f.read(118)]
             f.seek(118)
-            data_bytes = [byte for byte in f.read()]
+            data_bytes = [255-byte for byte in f.read()]
             fOut.write(bytes(data_bytes))
         print(fileName)
 
@@ -64,7 +64,7 @@ def selectSmallImages():
         with open(fileNameSmall, mode='rb') as f:
             header = [header_byte for header_byte in f.read(118)]
             f.seek(118)
-            data_bytes = [byte for byte in f.read()]
+            data_bytes = [255-byte for byte in f.read()]
             print('len of rastr = '+str(len(data_bytes)))
             width = header[18]
             print('width = ' + str(width))
