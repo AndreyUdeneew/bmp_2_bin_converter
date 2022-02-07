@@ -20,7 +20,7 @@ fullscreen_height = 128
 fullscreen_length = fullscreen_width*fullscreen_height/2
 MAX_N_of_Fullscreens = 256
 MAX_N_of_SmallImages = 256
-print(fullscreen_length)
+print('fullscreenlength = '+str(fullscreen_length))
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
@@ -69,9 +69,9 @@ def selectSmallImages():
             width = header[18]
             print('width = ' + str(width))
             height = header[22]
+            if (height % 2) != 0:
+                height += 1
             print('height = ' + str(height))
-        if (height % 2) != 0:
-            height += 1
         print(height * width / 2)
         length = height * width / 2
         # print(length)
@@ -87,12 +87,16 @@ def selectSmallImages():
         if len(data_bytes) < (int(fullscreen_length)):
             complement = '0xff'
             complement = int(complement, base=16)
-            for i in range(int(fullscreen_length)-2-len(data_bytes)):
+            nOfComplements = int(fullscreen_length - 2 - len(data_bytes))
+            print('nOfComplements = ' + str(nOfComplements))
+            for i in range(nOfComplements):
                 fOut.write(int.to_bytes(complement, 1, byteorder='big'))
                 nAdds = i
             adds = '0xff'
             adds = int(adds, base=16)
-            print('len of image with a complement = '+str(nAdds+len(data_bytes)))
+            print('number of complements = ' + str(nAdds))
+            print('len of image rastr = ' + str(len(data_bytes)))
+            print('len of image with a complement = '+str(nOfComplements+len(data_bytes)+2))
             ######################################    Adds to 256*8192 ################################
     for i in range((MAX_N_of_SmallImages-len(fileNamesSmall))*int(fullscreen_length)):
         fOut.write(int.to_bytes(adds, 1, byteorder='big'))
