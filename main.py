@@ -80,8 +80,8 @@ def selectSmallImages():
 #################################################################################
         f = open(fileNameSmall)          #   width and height became known
         fOut = open(outputFile, 'ab')
-        fOut.write(int.to_bytes(width, 1, byteorder='big'))
         fOut.write(int.to_bytes(height, 1, byteorder='big'))
+        fOut.write(int.to_bytes(width, 1, byteorder='big'))
         fOut.write(bytes(data_bytes))
         nAdds = 0
         if len(data_bytes) < (int(fullscreen_length)):
