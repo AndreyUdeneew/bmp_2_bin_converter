@@ -66,36 +66,37 @@ def selectSmallImages():
             f.seek(118)
             data_bytes = [255-byte for byte in f.read()]
             print('len of rastr = '+str(len(data_bytes)))
-            width = header[22]  # in my case, usually 18
+            width = header[18]
             print('width = ' + str(width))
-            height = header[18]  # in my case, usually 22
+            height = header[22]
             if (height % 2) != 0:
                 height += 1
-                print('height was incremented')
             print('height = ' + str(height))
+        print(height * width / 2)
         length = height * width / 2
+        # print(length)
+        length += 2
+
 #################################################################################
         f = open(fileNameSmall)          #   width and height became known
         fOut = open(outputFile, 'ab')
-        fOut.write(int.to_bytes(width, 1, byteorder='big'))
         fOut.write(int.to_bytes(height, 1, byteorder='big'))
-
-        fOut.write(bytes(data_bytes[:int(length)]))
+        fOut.write(int.to_bytes(width, 1, byteorder='big'))
+        fOut.write(bytes(data_bytes))
         nAdds = 0
-        length += 2     # with width and height
-        print('length = ' + str(length))
         if len(data_bytes) < (int(fullscreen_length)):
             complement = '0xff'
             complement = int(complement, base=16)
-            nOfComplements = int(fullscreen_length - length)
+            nOfComplements = int(fullscreen_length - 2 - len(data_bytes))
             print('nOfComplements = ' + str(nOfComplements))
-            for i in range(1, nOfComplements+1, 1):
+            for i in range(nOfComplements):
                 fOut.write(int.to_bytes(complement, 1, byteorder='big'))
                 nAdds = i
             adds = '0xff'
             adds = int(adds, base=16)
             print('number of complements = ' + str(nAdds))
-            print('len of image with a complement = '+str(nOfComplements+len(data_bytes[:int(length)])))
+            print('len of image rastr = ' + str(len(data_bytes)))
+            print('len of image with a complement = '+str(nOfComplements+len(data_bytes)+2))
             ######################################    Adds to 256*8192 ################################
     for i in range((MAX_N_of_SmallImages-len(fileNamesSmall))*int(fullscreen_length)):
         fOut.write(int.to_bytes(adds, 1, byteorder='big'))
