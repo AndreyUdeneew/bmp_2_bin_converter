@@ -17,7 +17,7 @@ import numpy as np
 # outputFile = "C:/Users/Stasy/Desktop/output2FLASH.txt"
 fullscreen_width = 128
 fullscreen_height = 128
-fullscreen_length = fullscreen_width*fullscreen_height/2
+fullscreen_length =  int(fullscreen_width*fullscreen_height/2)
 MAX_N_of_Fullscreens = 256
 MAX_N_of_SmallImages = 256
 print('fullscreenlength = '+str(fullscreen_length))
@@ -69,33 +69,51 @@ def selectSmallImages():
             width = header[22]  # in my case, usually 18
             print('width = ' + str(width))
             height = header[18]  # in my case, usually 22
-            if (height % 2) != 0:
-                height += 1
-                print('height was incremented')
             print('height = ' + str(height))
-        length = height * width / 2
+            heightInc = 0
+            decWidth = 0
+
+            if not (((height % 4) == 0) or ((height + 1) % 2 == 0)):
+                print("case 4 delete")
+                if (height % 2) != 0:
+                    heightInc = 1
+                start_byte_4_del = (height // 2)
+                stepDel = (height // 2) + 1
+                del data_bytes[start_byte_4_del::stepDel]
+                print(len(data_bytes))
+                print(stepDel)
+                print(start_byte_4_del)
+                # data_bytes[start_byte_4_del::stepDel] = [170] * (width - decWidth)
+
+            # if(height % 2) != 0:
+
+            #     heightInc = 1
+            #     step = ((height + heightInc) // 2)
+            #     start_byte_4_transform = (((height + heightInc) // 2) - 1)
+            #     print(len(data_bytes))
+            #     print(step)
+            #     print(start_byte_4_transform)
+            #     data_bytes[start_byte_4_transform::step] = [170] * (width - decWidth)
 #################################################################################
         f = open(fileNameSmall)          #   width and height became known
         fOut = open(outputFile, 'ab')
         fOut.write(int.to_bytes(width, 1, byteorder='big'))
         fOut.write(int.to_bytes(height, 1, byteorder='big'))
-
-        fOut.write(bytes(data_bytes[:int(length)]))
+        fOut.write(bytes(data_bytes[:len(data_bytes)]))
         nAdds = 0
-        length += 2     # with width and height
-        print('length = ' + str(length))
+
+        complement = '0xff'
+        complement = int(complement, base=16)
         if len(data_bytes) < (int(fullscreen_length)):
-            complement = '0xff'
-            complement = int(complement, base=16)
-            nOfComplements = int(fullscreen_length - length)
+            nOfComplements = fullscreen_length - (len(data_bytes)+2) + 1
             print('nOfComplements = ' + str(nOfComplements))
-            for i in range(1, nOfComplements+1, 1):
+            for i in range(1, nOfComplements, 1):
                 fOut.write(int.to_bytes(complement, 1, byteorder='big'))
                 nAdds = i
             adds = '0xff'
             adds = int(adds, base=16)
             print('number of complements = ' + str(nAdds))
-            print('len of image with a complement = '+str(nOfComplements+len(data_bytes[:int(length)])))
+            # print('len of image with a complement = '+str(nOfComplements+len(data_bytes[:int(length)])))
             ######################################    Adds to 256*8192 ################################
     for i in range((MAX_N_of_SmallImages-len(fileNamesSmall))*int(fullscreen_length)):
         fOut.write(int.to_bytes(adds, 1, byteorder='big'))
@@ -223,7 +241,7 @@ def selectSounds():
 if __name__ == '__main__':
     window = Tk()
     window.geometry('1100x100')
-    window.title("flashFiller")
+    window.title("bmp_2_bin_converter")
 
     lbl0 = Label(window, text="Выбор полноэкранных картинок")
     lbl0.grid(column=0, row=1)
