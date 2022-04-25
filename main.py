@@ -131,11 +131,6 @@ def selectSounds():
     fileNames = askopenfilenames(parent=window)
     fileNames = sorted(fileNames)
     fOut = open(outputFile, 'ab')
-#################Adding adds after images before sounds##########################################
-    adds = '0xff'
-    adds = int(adds, base=16)
-    for n in range(262144*64):
-        fOut.write(int.to_bytes(adds, 1, byteorder='big'))
 
     soundNum = -1
     prevAddr = 0x01400900
