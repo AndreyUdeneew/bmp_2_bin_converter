@@ -1,6 +1,7 @@
 # This is a sample Python script.
 import re
 import struct
+import wave
 from tkinter import *
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -129,21 +130,12 @@ def selectSounds():
     }
     fileNames = askopenfilenames(parent=window)
     fileNames = sorted(fileNames)
-    fOut = open(outputFile, 'a')
+    fOut = open(outputFile, 'ab')
 #################Adding adds after images before sounds##########################################
     adds = '0xff'
     adds = int(adds, base=16)
     for n in range(262144*64):
         fOut.write(int.to_bytes(adds, 1, byteorder='big'))
-    # for n in range(1, 262144 + 1, 1):
-    #     adds = ('ff,' * 64) + '\n'
-    #     adds = re.sub(r'\]', '', adds)
-    #     adds = re.sub(r'\[', '', adds)
-    #     # adds = re.sub(r'0x', '', adds)
-    #     adds = re.sub(r'\'', '', adds)
-    #     adds = re.sub(r'\ ', '', adds)
-    #     # print(adds)
-    #     fOut.writelines(adds)
 
     soundNum = -1
     prevAddr = 0x01400900
@@ -159,7 +151,7 @@ def selectSounds():
         soundNumHex = hex(soundNum)
         print('soundNum='+str(soundNumHex))
         soundNumHex = int(soundNumHex, base=16)
-        soundNumHex = format(int(soundNumHex), 'x')
+        # soundNumHex = format(int(soundNumHex), 'x')
         print('soundNum='+str(soundNumHex))
 ################################################ length of sounв obtaining ########################
         nframes_3 = hex((nframes >> 24) & 0xFF)
@@ -170,10 +162,10 @@ def selectSounds():
         nframes_2 = int(nframes_2, base=16)
         nframes_1 = int(nframes_1, base=16)
         nframes_0 = int(nframes_0, base=16)
-        nframes_3 = format(nframes_3, "x")
-        nframes_2 = format(nframes_2, "x")
-        nframes_1 = format(nframes_1, "x")
-        nframes_0 = format(nframes_0, "x")
+        # nframes_3 = format(nframes_3, "x")
+        # nframes_2 = format(nframes_2, "x")
+        # nframes_1 = format(nframes_1, "x")
+        # nframes_0 = format(nframes_0, "x")
         print('nframes_3=' + str(nframes_3))
         print('nframes_2=' + str(nframes_2))
         print('nframes_1=' + str(nframes_1))
@@ -194,10 +186,10 @@ def selectSounds():
         currAddr_2 = int(currAddr_2, base=16)
         currAddr_1 = int(currAddr_1, base=16)
         currAddr_0 = int(currAddr_0, base=16)
-        currAddr_3 = format(currAddr_3, "x")
-        currAddr_2 = format(currAddr_2, "x")
-        currAddr_1 = format(currAddr_1, "x")
-        currAddr_0 = format(currAddr_0, "x")
+        # currAddr_3 = format(currAddr_3, "x")
+        # currAddr_2 = format(currAddr_2, "x")
+        # currAddr_1 = format(currAddr_1, "x")
+        # currAddr_0 = format(currAddr_0, "x")
         print('currAddr_3=' + str(currAddr_3))
         print('currAddr_2=' + str(currAddr_2))
         print('currAddr_1=' + str(currAddr_1))
@@ -205,16 +197,27 @@ def selectSounds():
         print('currAddr=' + str(currAddr))
         prevAddr = currAddr + nframes               # bubble
 ##################################################### write info to infoPage ########################
-        fOut.writelines(str(soundNumHex)+','+str(currAddr_3)+','+str(currAddr_2)+','+str(currAddr_1)+','
-                        +str(currAddr_0)+','+str(nframes_3)+','+str(nframes_2)+','+str(nframes_1)+','
-                        +str(nframes_0)+',')
-        fOut.writelines('\n')
+        # fOut.write(str(soundNumHex)+','+str(currAddr_3)+','+str(currAddr_2)+','+str(currAddr_1)+','
+        #                 +str(currAddr_0)+','+str(nframes_3)+','+str(nframes_2)+','+str(nframes_1)+','
+        #                 +str(nframes_0)+',')
+        fOut.write(int.to_bytes(soundNumHex, 1, byteorder='big'))
+        fOut.write(int.to_bytes(currAddr_3, 1, byteorder='big'))
+        fOut.write(int.to_bytes(currAddr_2, 1, byteorder='big'))
+        fOut.write(int.to_bytes(currAddr_1, 1, byteorder='big'))
+        fOut.write(int.to_bytes(currAddr_0, 1, byteorder='big'))
+        fOut.write(int.to_bytes(nframes_3, 1, byteorder='big'))
+        fOut.write(int.to_bytes(nframes_2, 1, byteorder='big'))
+        fOut.write(int.to_bytes(nframes_1, 1, byteorder='big'))
+        fOut.write(int.to_bytes(nframes_0, 1, byteorder='big'))
+        # fOut.writelines('\n')
 ##################################################### write adds after soundInfo to output file #####
+    soundComplement = '0xff'
+    soundComplement = int(soundComplement, base=16)
     if len(fileNames)<256:
         nSoundComplements = (256 - len(fileNames)) * 9
-        soundComplement = ('ff,' + '\n' )
+        # soundComplement = ('ff,' + '\n' )
         for i in range(1, nSoundComplements+1, 1):
-            fOut.writelines(soundComplement)
+            fOut.write(int.to_bytes(soundComplement, 1, byteorder='big'))
 ##################################################### write content to output file ##################
     for fileName_ in fileNames:
         print(fileName_)
@@ -222,17 +225,18 @@ def selectSounds():
         wav = wave.open(fileName_, mode="r")
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wav.getparams()
         content = wav.readframes(nframes)
-        content = str(content)
-        content = re.findall(r'[x]\w+', str(content))
-        content = str(content)
-        content = re.sub(r'\]', '', content)
-        content = re.sub(r'\[', '', content)
-        content = re.sub(r'x', '', content)
-        content = re.sub(r'\'', '', content)
-        content = re.sub(r'\ ', '', content)
-        # print(content)
-        fOut.writelines(content + ',')
-        fOut.writelines('\n')
+        # content = str(content)
+        # content = re.findall(r'[x]\w+', str(content))
+        # content = str(content)
+        # content = re.sub(r'\]', '', content)
+        # content = re.sub(r'\[', '', content)
+        # content = re.sub(r'x', '', content)
+        # content = re.sub(r'\'', '', content)
+        # content = re.sub(r'\ ', '', content)
+        print(content)
+        # fOut.write(content + ',')
+        fOut.write((bytes(content[:len(content)])))
+        # fOut.writelines('\n')
         wav.close()
     fOut.close()
     text2.insert(INSERT, 'Готово')
