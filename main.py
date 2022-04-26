@@ -134,7 +134,7 @@ def selectSounds():
 
     soundNum = -1
     prevAddr = 0x01400900
-    prevAddr = 20973824
+    prevAddr = 4194304
 
     for fileName in fileNames:
         frames=''
@@ -206,13 +206,13 @@ def selectSounds():
         fOut.write(int.to_bytes(nframes_0, 1, byteorder='big'))
         # fOut.writelines('\n')
 ##################################################### write adds after soundInfo to output file #####
-    soundComplement = '0xff'
-    soundComplement = int(soundComplement, base=16)
-    if len(fileNames)<256:
-        nSoundComplements = (256 - len(fileNames)) * 9
-        # soundComplement = ('ff,' + '\n' )
-        for i in range(1, nSoundComplements+1, 1):
-            fOut.write(int.to_bytes(soundComplement, 1, byteorder='big'))
+    # soundComplement = '0xff'
+    # soundComplement = int(soundComplement, base=16)
+    # if len(fileNames)<256:
+    #     nSoundComplements = (256 - len(fileNames)) * 9
+    #     # soundComplement = ('ff,' + '\n' )
+    #     for i in range(1, nSoundComplements+1, 1):
+    #         fOut.write(int.to_bytes(soundComplement, 1, byteorder='big'))
 ##################################################### write content to output file ##################
     for fileName_ in fileNames:
         print(fileName_)
