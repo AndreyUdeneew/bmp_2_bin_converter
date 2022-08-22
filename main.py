@@ -7,11 +7,17 @@ from tkinter import *
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from tkinter import filedialog
 from tkinter.filedialog import *
+import cv2
+from cv2 import imshow
+from matplotlib.image import imread
 import os
 # import scipy
 # import wave
 # from scipy.io import wavfile
 import numpy as np
+from scipy.io import wavfile
+from PIL import Image
+import cv2
 # import soundfile as sf
 # from scipy.io.wavfile import read
 
@@ -62,29 +68,47 @@ def selectSmallImages():
     for fileNameSmall in fileNamesSmall:
         print(fileNameSmall)
         print('small image')
-        with open(fileNameSmall, mode='rb') as f:
-            header = [header_byte for header_byte in f.read(118)]
-            f.seek(118)
-            data_bytes = [255-byte for byte in f.read()]
-            print('len of rastr = '+str(len(data_bytes)))
-            width = header[22]  # in my case, usually 18
-            print('width = ' + str(width))
-            height = header[18]  # in my case, usually 22
-            print('height = ' + str(height))
-            heightInc = 0
-            decWidth = 0
+        # imageData = imread(fileNameSmall)
+        img = cv2.imread(fileNameSmall, cv2.IMREAD_GRAYSCALE)
+        imDims = img.shape
+        width = imDims[0]
+        height = imDims[1]
+        height = (height // 2) + 1
+        img = cv2.resize(img, (height, width))
+        imData = np.asarray(img)
+        # imData = np.reshape(imData, (1, (width * height)))
+        print(imData)
+        print(imDims)
+        print(width)
+        print(height)
+        print(imData.size)
+        # imageData.open(fileNameSmall)
+        # imageData = cv2.GetMat(imageData)
+        # imageData = np.asarray(imageData)
 
-            if not (((height % 4) == 0) or ((height + 1) % 2 == 0)):
-                print("case 4 delete")
-                if (height % 2) != 0:
-                    heightInc = 1
-                start_byte_4_del = (height // 2)
-                stepDel = (height // 2) + 1
-                del data_bytes[start_byte_4_del::stepDel]
-                print(len(data_bytes))
-                print(stepDel)
-                print(start_byte_4_del)
-                # data_bytes[start_byte_4_del::stepDel] = [170] * (width - decWidth)
+        # with open(fileNameSmall, mode='rb') as f:
+        #     header = [header_byte for header_byte in f.read(118)]
+        #     f.seek(118)
+        #     data_bytes = [255-byte for byte in f.read()]
+        #     print('len of rastr = '+str(len(data_bytes)))
+        #     width = header[22]  # in my case, usually 18
+        #     print('width = ' + str(width))
+        #     height = header[18]  # in my case, usually 22
+        #     print('height = ' + str(height))
+        #     heightInc = 0
+        #     decWidth = 0
+        #
+        #     if not (((height % 4) == 0) or ((height + 1) % 2 == 0)):
+        #         print("case 4 delete")
+        #         if (height % 2) != 0:
+        #             heightInc = 1
+        #         start_byte_4_del = (height // 2)
+        #         stepDel = (height // 2) + 1
+        #         del data_bytes[start_byte_4_del::stepDel]
+        #         print(len(data_bytes))
+        #         print(stepDel)
+        #         print(start_byte_4_del)
+        #         # data_bytes[start_byte_4_del::stepDel] = [170] * (width - decWidth)
 
             # if(height % 2) != 0:
 
@@ -95,18 +119,20 @@ def selectSmallImages():
             #     print(step)
             #     print(start_byte_4_transform)
             #     data_bytes[start_byte_4_transform::step] = [170] * (width - decWidth)
+            # im = Image.open("/Users/Hugo/green_leaves.jpg")
+            # data_bytes = np.array(f)
 #################################################################################
         f = open(fileNameSmall)          #   width and height became known
         fOut = open(outputFile, 'ab')
         fOut.write(int.to_bytes(width, 1, byteorder='big'))
         fOut.write(int.to_bytes(height, 1, byteorder='big'))
-        fOut.write(bytes(data_bytes[:len(data_bytes)]))
+        fOut.write(bytes(imData))
         nAdds = 0
 
         complement = '0xff'
         complement = int(complement, base=16)
-        if len(data_bytes) < (int(fullscreen_length)):
-            nOfComplements = fullscreen_length - (len(data_bytes)+2) + 1
+        if imData.size < (int(fullscreen_length)):
+            nOfComplements = fullscreen_length - (imData.size+2) + 1
             print('nOfComplements = ' + str(nOfComplements))
             for i in range(1, nOfComplements, 1):
                 fOut.write(int.to_bytes(complement, 1, byteorder='big'))
@@ -133,8 +159,9 @@ def selectSounds():
     fOut = open(outputFile, 'ab')
 
     soundNum = -1
-    prevAddr = 0x01400900
-    prevAddr = 4194304
+
+    # prevAddr = 4194304
+    prevAddr = 0
 
     for fileName in fileNames:
         frames=''
@@ -149,6 +176,9 @@ def selectSounds():
         # soundNumHex = format(int(soundNumHex), 'x')
         print('soundNum='+str(soundNumHex))
 ################################################ length of sounв obtaining ########################
+        print(nframes)
+        nframes *= 4   # 2 channels * 2 bytes per sample
+        print(nframes)
         nframes_3 = hex((nframes >> 24) & 0xFF)
         nframes_2 = hex((nframes >> 16) & 0xFF)
         nframes_1 = hex((nframes >> 8) & 0xFF)
@@ -172,7 +202,7 @@ def selectSounds():
         # print('sample width='+str(sampwidth))
         # print('framerate='+str(framerate))
 ##################################################### current address obtaining #####################
-        currAddr = prevAddr                         # bubble
+        currAddr = prevAddr + len(fileNames) * 9                        # bubble
         currAddr_3 = hex((currAddr >> 24) & 0xFF)
         currAddr_2 = hex((currAddr >> 16) & 0xFF)
         currAddr_1 = hex((currAddr >> 8) & 0xFF)
@@ -190,7 +220,7 @@ def selectSounds():
         print('currAddr_1=' + str(currAddr_1))
         print('currAddr_0=' + str(currAddr_0))
         print('currAddr=' + str(currAddr))
-        prevAddr = currAddr + nframes               # bubble
+        prevAddr = currAddr + nframes * 2   #left and right               # bubble
 ##################################################### write info to infoPage ########################
         # fOut.write(str(soundNumHex)+','+str(currAddr_3)+','+str(currAddr_2)+','+str(currAddr_1)+','
         #                 +str(currAddr_0)+','+str(nframes_3)+','+str(nframes_2)+','+str(nframes_1)+','
@@ -204,7 +234,6 @@ def selectSounds():
         fOut.write(int.to_bytes(nframes_2, 1, byteorder='big'))
         fOut.write(int.to_bytes(nframes_1, 1, byteorder='big'))
         fOut.write(int.to_bytes(nframes_0, 1, byteorder='big'))
-        # fOut.writelines('\n')
 ##################################################### write adds after soundInfo to output file #####
     # soundComplement = '0xff'
     # soundComplement = int(soundComplement, base=16)
@@ -217,21 +246,31 @@ def selectSounds():
     for fileName_ in fileNames:
         print(fileName_)
         frames = ''
-        wav = wave.open(fileName_, mode="r")
+        wav = wave.open(fileName_, mode="rb")
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wav.getparams()
         content = wav.readframes(nframes)
-        # content = str(content)
-        # content = re.findall(r'[x]\w+', str(content))
-        # content = str(content)
-        # content = re.sub(r'\]', '', content)
-        # content = re.sub(r'\[', '', content)
-        # content = re.sub(r'x', '', content)
-        # content = re.sub(r'\'', '', content)
-        # content = re.sub(r'\ ', '', content)
+        # content = bytearray(content)
+        print(type(content))
+        # samplerate, content1 = wavfile.read(fileName)
+        content = np.frombuffer(content, dtype = np.uint16)
+        # content = np.ndarray(shape=((len(content) // 2),), dtype='<i2', buffer=content)
+        print(len(content))
         print(content)
-        # fOut.write(content + ',')
+        # for i in content:
+        #     print(hex(i))
+            # fOut.write(bytes(i))
+        # content = np.frombuffer(content, dtype=np.int16)
+        # content = np.ndarray(shape=((len(content)//2),), dtype='<i2', buffer = content)
+        print(type(content))
+        # contentStr = content.hex()
+        # print(type(contentStr))
+        # print(contentStr)
+        # content.byteswap(True)
+        # print(content)
+        # for i in range(len(content)):
+        #     content = int(content[i], base=16)
         fOut.write((bytes(content[:len(content)])))
-        # fOut.writelines('\n')
+        # wav.writeframes(content)
         wav.close()
     fOut.close()
     text2.insert(INSERT, 'Готово')
@@ -239,7 +278,7 @@ def selectSounds():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     window = Tk()
-    window.geometry('1100x100')
+    window.geometry('1100x110')
     window.title("bmp_2_bin_converter")
 
     lbl0 = Label(window, text="Выбор полноэкранных картинок")
