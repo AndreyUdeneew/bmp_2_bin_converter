@@ -160,8 +160,8 @@ def selectSounds():
 
     soundNum = -1
 
-    # prevAddr = 4194304
-    prevAddr = 0
+    prevAddr = 4194304 + len(fileNames * 9)
+    # prevAddr = 0 + len(fileNames * 9)
 
     for fileName in fileNames:
         frames=''
@@ -202,7 +202,7 @@ def selectSounds():
         # print('sample width='+str(sampwidth))
         # print('framerate='+str(framerate))
 ##################################################### current address obtaining #####################
-        currAddr = prevAddr + len(fileNames) * 9                        # bubble
+        currAddr = prevAddr                      # bubble
         currAddr_3 = hex((currAddr >> 24) & 0xFF)
         currAddr_2 = hex((currAddr >> 16) & 0xFF)
         currAddr_1 = hex((currAddr >> 8) & 0xFF)
@@ -220,7 +220,7 @@ def selectSounds():
         print('currAddr_1=' + str(currAddr_1))
         print('currAddr_0=' + str(currAddr_0))
         print('currAddr=' + str(currAddr))
-        prevAddr = currAddr + nframes * 2   #left and right               # bubble
+        prevAddr = currAddr + nframes               # bubble
 ##################################################### write info to infoPage ########################
         # fOut.write(str(soundNumHex)+','+str(currAddr_3)+','+str(currAddr_2)+','+str(currAddr_1)+','
         #                 +str(currAddr_0)+','+str(nframes_3)+','+str(nframes_2)+','+str(nframes_1)+','
@@ -254,7 +254,7 @@ def selectSounds():
         # samplerate, content1 = wavfile.read(fileName)
         content = np.frombuffer(content, dtype = np.uint16)
         # content = np.ndarray(shape=((len(content) // 2),), dtype='<i2', buffer=content)
-        print(len(content))
+        print("len of content" + str(len(content)))
         print(content)
         # for i in content:
         #     print(hex(i))
